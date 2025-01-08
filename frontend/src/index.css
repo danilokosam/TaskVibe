@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('src/assets/fonts/Geist[wght].ttf') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+}
