@@ -1,46 +1,35 @@
-import { ObjectId } from "mongodb";
-import connectToDataBase from "../config/db";
+import Task from "../models/Task";
 
-export const findAllTasks = async () => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-  return collection.find({}).sort({ createdAt: -1 }).limit(20).toArray();
+// Find all tasks by userId
+export const findAllTasks = async (userId) => {
+  return await Task.find({ userId });
 };
 
-export const findTaskById = async (id) => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-  return collection.findOne({ _id: new ObjectId(id) });
+// Find a task by its ID and userId
+export const findTaskById = async (taskId, userId) => {
+  return await Task.findOne({ _id: taskId, userId });
 };
 
-export const findLatestTasks = async (limit) => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-  return collection
-    .aggregate([
-      { $project: { title: 1, description: 1, completed: 1, createdAt: 1 } }, // Select specific fields
-      { $sort: { createdAt: -1 } }, // Sort by createdAt in descending order
-      { $limit: limit }, // Limit the number of results
-    ])
-    .toArray();
+// Find the latest tasks by userId with a limit
+export const findLatestTasks = async (userId, limit) => {
+  return await Task.find({ userId }).sort({ createdAt: -1 }).limit(limit);
 };
 
-export const createNewTask = async (taskData) => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-  return collection.insertOne({
-    ...taskData,
-    createdAt: new Date(),
-    changeLog: [],
-  });
+// Create a new task and associate it with the authenticated user
+export const createNewTask = async (taskData, userId) => {
+  const task = new Task({ ...taskData, userId });
+  return await task.save();
 };
 
-export const updateExistingTask = async (id, updateFields, changes) => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-
-  const result = await collection.updateOne(
-    { _id: new ObjectId(id) },
+// Update an existing task by taskId and userId
+export const updateExistingTask = async (
+  taskId,
+  updateFields,
+  changes,
+  userId
+) => {
+  return await Task.findOneAndUpdate(
+    { _id: taskId, userId },
     {
       $set: updateFields,
       $push: {
@@ -49,31 +38,19 @@ export const updateExistingTask = async (id, updateFields, changes) => {
           $slice: -10,
         },
       },
-    }
+    },
+    { new: true }
   );
-
-  return result.modifiedCount > 0;
 };
 
-export const getTaskLog = async (id) => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-
-  const task = await collection.findOne(
-    { _id: new ObjectId(id) },
-    { projection: { changeLog: 1 } }
-  );
-
-  return task?.changeLog;
+// Delete a task by taskId and userId
+export const deleteExistingTask = async (taskId, userId) => {
+  return await Task.findOneAndDelete({ _id: taskId, userId });
 };
 
-export const deleteExistingTask = async (id) => {
-  const db = await connectToDataBase();
-  const collection = db.collection("tasks");
-
-  const task = await collection.findOne({ _id: new ObjectId(id) });
-  if (!task) return false;
-
-  const result = await collection.deleteOne({ _id: new ObjectId(id) });
-  return result.deletedCount > 0;
+// Get the change log of a task by taskId and userId
+export const getTaskLog = async (taskId, userId) => {
+  const task = await Task.findOne({ _id: taskId, userId });
+  if (!task) return null;
+  return task.changeLog || [];
 };

@@ -41,7 +41,7 @@ export const validateUpdateData = (body) => {
     const date = new Date(deadline);
     if (isNaN(date.getTime())) {
       return { error: "Invalid deadline format" };
-    } else if (date <= new Date()) {
+    } else if (date <= Date.now()) {
       return { error: "Deadline must be a future date" };
     }
     updateFields.deadline = date;
