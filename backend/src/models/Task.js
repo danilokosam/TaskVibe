@@ -29,6 +29,12 @@ const taskSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    changeLog: [
+      {
+        date: { type: Date, required: true }, // Fecha del cambio
+        changes: { type: Object, required: true }, // Cambios realizados
+      },
+    ],
   },
   {
     timestamps: true, // Add fields such as created_at and updated_at

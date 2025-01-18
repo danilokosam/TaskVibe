@@ -1,5 +1,5 @@
-import { validateObjectId, validateUpdateData } from "../utils/validators";
-import { handleDatabaseOperation } from "../utils/errorHandlers";
+import { validateObjectId, validateUpdateData } from "../utils/validators.js";
+import { handleDatabaseOperation } from "../utils/errorHandlers.js";
 import {
   findAllTasks,
   findTaskById,
@@ -8,13 +8,13 @@ import {
   updateExistingTask,
   deleteExistingTask,
   getTaskLog,
-} from "../services/taskService";
+} from "../services/taskService.js";
 
 export const getAllTasks = async (req, res, next) => {
   await handleDatabaseOperation(
     res,
     async () => {
-      const tasks = await findAllTasks(req.user.id);
+      const tasks = await findAllTasks(req.userId);
       res.status(200).send(tasks);
     },
     next
@@ -26,7 +26,7 @@ export const getSingleTask = async (req, res, next) => {
     res,
     async () => {
       const taskId = req.params.id;
-      const task = await findTaskById(taskId, req.user.id);
+      const task = await findTaskById(taskId, req.userId);
       if (!task) {
         return res.status(404).send({ message: "Task not found" });
       }
@@ -42,7 +42,7 @@ export const getLatestTasks = async (req, res, next) => {
     async () => {
       let limit = parseInt(req.query.limit) || 3;
       limit = Math.max(1, Math.min(limit, 10));
-      const tasks = await findLatestTasks(req.user.id, limit);
+      const tasks = await findLatestTasks(req.userId, limit);
       res.status(200).json(tasks);
     },
     next
@@ -50,10 +50,14 @@ export const getLatestTasks = async (req, res, next) => {
 };
 
 export const createTask = async (req, res, next) => {
+  if (!req.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
   await handleDatabaseOperation(
     res,
     async () => {
-      const result = await createNewTask(req.body, req.user.id);
+      const result = await createNewTask(req.body, req.userId);
       res.status(201).send(result);
     },
     next
@@ -78,7 +82,7 @@ export const updateTask = async (req, res, next) => {
         req.params.id,
         updateFields,
         changes,
-        req.user.id
+        req.userId
       );
       if (!result) {
         return res.status(404).send({ message: "Task not found" });
@@ -99,7 +103,7 @@ export const getTaskChangeLog = async (req, res, next) => {
         return res.status(400).send({ message });
       }
 
-      const changeLog = await getTaskLog(req.params.id, req.user.id);
+      const changeLog = await getTaskLog(req.params.id, req.userId);
       if (!changeLog) {
         return res.status(404).send({ message: "Task not found" });
       }
@@ -119,7 +123,7 @@ export const deleteTask = async (req, res, next) => {
         return res.status(400).send({ message });
       }
 
-      const result = await deleteExistingTask(req.params.id, req.user.id);
+      const result = await deleteExistingTask(req.params.id, req.userId);
       if (!result) {
         return res.status(404).send({ message: "Task not found" });
       }
