@@ -1,11 +1,14 @@
+// App.jsx
 import "./App.css";
-import TaskList from "@/components/TaskList";
+import MainLayout from "@/layouts/MainLayout";
 
 function App() {
   return (
-    <>
-      <TaskList></TaskList>
-    </>
+    <div
+      className="leading-normal tracking-normal text-white font-medium bg-cover bg-fixed min-h-screen flex flex-col w-full bg-[#1D232A]"
+    >
+      <MainLayout />
+    </div>
   );
 }
 
