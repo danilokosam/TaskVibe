@@ -1,15 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { LoginButton } from "@/components/auth/login-button";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const HeroSection = () => {
-  const navigate = useNavigate();
-
-  const handleStartNow = () => {
-    navigate("/login");
-  };
-
-  const handleMoreInfo = () => {
-    navigate("/about");
-  };
+  const { isAuthenticated } = useAuth0();
 
   return (
     <>
@@ -25,18 +19,7 @@ const HeroSection = () => {
           Your success begins with good organization.
         </p>
         <div className="flex flex-col gap-5 sm:gap-10  sm:flex-row sm:space-evenly md:justify-start">
-          <button
-            className="btn btn-primary text-zinc-100"
-            onClick={handleStartNow}
-          >
-            Start Now
-          </button>
-          <button
-            className="btn btn-active text-zinc-100"
-            onClick={handleMoreInfo}
-          >
-            More Info
-          </button>
+          {isAuthenticated ? <LogoutButton /> : <LoginButton />}
         </div>
       </div>
       <div className="w-full xl:w-3/5 p-5 mt-14">

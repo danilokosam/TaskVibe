@@ -1,20 +1,16 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
-// import Login from "@/pages/auth/Login";
-// import Register from "@/pages/auth/Register";
-import TaskList from "@/components/TaskList";
-import HeroSection from "@/components/HeroSection";
+// import TaskList from "@/components/TaskList";
+import { HomeWithoutAuthenticated } from "@/pages/HomeWithoutAuthenticated";
+import { AuthenticationGuard } from "@/components/auth/authentication-guard";
 
 const AppRouter = () => {
-  const isAuthenticated = false;
   return (
     <Routes>
-      <Route path="/" element={isAuthenticated ? <Home /> : <HeroSection />} />
-      <Route path="/tasks" element={<TaskList />} />
+      <Route path="/" element={<HomeWithoutAuthenticated />} />
       <Route path="/about" element={<About />} />
-      {/* <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} /> */}
+      <Route path="/tasks" element={<AuthenticationGuard component={Home} />} />
     </Routes>
   );
 };

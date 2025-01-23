@@ -1,0 +1,10 @@
+{
+    "extends": "../tsconfig.json", // Extiende la configuración base
+    "compilerOptions": {
+      "jsx": "react-jsx", // Habilitar JSX para React
+      "outDir": "./dist", // Carpeta de salida para el frontend
+      "rootDir": "./src"  // Carpeta de entrada para el frontend
+    },
+    "include": ["src/**/*"], // Incluir solo los archivos del frontend
+    "exclude": ["node_modules"] // Excluir node_modules del frontend
+  }
