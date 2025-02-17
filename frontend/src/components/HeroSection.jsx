@@ -19,7 +19,7 @@ const HeroSection = () => {
           Your success begins with good organization.
         </p>
         <div className="flex flex-col gap-5 sm:gap-10  sm:flex-row sm:space-evenly md:justify-start">
-          {isAuthenticated ? <LogoutButton /> : <LoginButton />}
+          {!isAuthenticated && <LoginButton />}
         </div>
       </div>
       <div className="w-full xl:w-3/5 p-5 mt-14">

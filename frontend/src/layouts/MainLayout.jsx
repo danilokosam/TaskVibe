@@ -27,7 +27,7 @@ const MainLayout = () => {
               <Navbar />
             )}
           </div>
-          <div className="container pt-24 md:pt-10 mx-auto flex flex-wrap flex-col md:flex-row items-center">
+          <div className="flex flex-col md:flex-row items-center justify-center pt-24 md:pt-10 mx-auto flex-wrap md:flex-nowrap">
             <AppRouter />
           </div>
         </div>

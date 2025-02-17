@@ -4,25 +4,16 @@ import LinkedInIcon from "./svgs/LinkedInIcon";
 import XIcon from "./svgs/XIcon";
 import { useAuth0 } from "@auth0/auth0-react";
 import { LogoutButton } from "./auth/logout-button";
+import { Logo } from "./Logo";
 
 const Navbar = () => {
   const { isAuthenticated } = useAuth0();
   return (
-    <div className="w-full h-16 flex items-center justify-between gap-3">
-      {
-        // Si el usuario está autenticado, muestra el botón de logout
-        isAuthenticated && <LogoutButton />
-      }
-      {/* Envuelve el h1 con Link para redirigir a la página principal */}
-      <Link
-        to="/"
-        className="no-underline"
-        aria-label="Ir a la página principal"
-      >
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 select-none">
-          TaskVibe
-        </h1>
-      </Link>
+    <div className="w-full h-16 flex items-center justify-between gap-3 px-4">
+     <div className="flex items-center gap-3">
+        <Logo />
+        {isAuthenticated && <LogoutButton />}
+      </div>
 
       <div className="flex w-1/2 justify-center items-center gap-1 sm:justify-end">
         <a

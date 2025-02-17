@@ -8,8 +8,9 @@ import helmet from "helmet";
 import axios from "axios";
 import qs from "querystring";
 import { userMiddleware } from "./middlewares/userMiddleware.js";
-import jwksRsa from "jwks-rsa"; // Importar la librería jwks-rsa
-import jwt from "jsonwebtoken"; // Importar la librería jsonwebtoken
+import jwksRsa from "jwks-rsa";
+import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
@@ -24,11 +25,11 @@ const client = jwksRsa({
 function getKey(header, callback) {
   client.getSigningKey(header.kid, (err, key) => {
     if (err) {
-      console.log("Error al obtener la clave pública de Auth0:", err); // Debugging
+      console.log("Error al obtener la clave pública de Auth0:", err);
       return callback(err);
     }
     const signingKey = key.publicKey || key.rsaPublicKey;
-    console.log("Clave pública obtenida:", signingKey); // Debugging
+    console.log("Clave pública obtenida:", signingKey);
     callback(null, signingKey);
   });
 }
@@ -38,30 +39,30 @@ const checkJwt = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1]; // Obtener el token del encabezado Authorization
 
   if (!token) {
-    console.log("Authorization Header🔧🔧:", req.headers.authorization); // Debugging
+    console.log("Authorization Header🔧🔧:", req.headers.authorization);
     return res.status(401).json({ error: "Token no proporcionado" });
   }
 
-  console.log("Authorization Header🔑🔑:", req.headers.authorization); // Debugging
+  // console.log("Authorization Header🔑🔑:", req.headers.authorization);
 
   // Verificar el JWT usando jsonwebtoken y la clave pública de Auth0
   jwt.verify(
     token,
     getKey,
     {
-      audience: "https://my-tasks-api/",
-      issuer: "https://dev-mr1efu4j3fgy6iej.us.auth0.com/",
+      audience: process.env.AUDIENCE,
+      issuer: process.env.ISSUER,
     },
     (err, decoded) => {
       if (err) {
-        console.log("Token inválido:", err.message); // Debugging
+        console.log("Token inválido:", err.message);
         return res
           .status(401)
           .json({ error: "Token inválido", details: err.message });
       }
-      console.log("Token válido, decoded user:", decoded); // Debugging
+      console.log("Token válido, decoded user:", decoded);
       req.user = decoded; // Guardar la información del usuario en la solicitud
-      next(); // Continuar con la siguiente ruta o middleware
+      next();
     }
   );
 };
@@ -69,8 +70,17 @@ const checkJwt = (req, res, next) => {
 // Configuración de middlewares básicos
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+
+// Configuración de rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 1000, // Limita cada IP a 100 solicitudes por ventana de tiempo
+  message: "Demasiadas solicitudes desde esta IP, intenta de nuevo más tarde.",
+});
+
+app.use(limiter); // Aplicar el rate limiter a todas las rutas
 
 // Agregar esto justo después de los middlewares básicos
 app.use((req, res, next) => {
@@ -100,12 +110,12 @@ app.get("/", (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const response = await axios.post(
-      `https://dev-mr1efu4j3fgy6iej.us.auth0.com/oauth/token`,
+      process.env.AUTH0_TOKEN,
       {
         grant_type: "client_credentials",
         client_id: process.env.AUTH0_CLIENT_ID,
         client_secret: process.env.AUTH0_CLIENT_SECRET,
-        audience: "https://my-tasks-api/",
+        audience: process.env.AUDIENCE,
       },
       {
         headers: {
@@ -125,7 +135,7 @@ app.post("/login", async (req, res) => {
 });
 // Ruta de callback (maneja la respuesta de Auth0 con el código de autorización)
 app.get("/callback", async (req, res) => {
-  const { code } = req.query; // Obtener el código de autorización de la URL
+  const { code } = req.query;
 
   if (!code) {
     return res.status(400).json({ error: "Authorization code not provided" });
@@ -134,19 +144,19 @@ app.get("/callback", async (req, res) => {
   try {
     // Intercambiar el código de autorización por tokens de acceso
     const tokenResponse = await axios.post(
-      "https://dev-mr1efu4j3fgy6iej.us.auth0.com/oauth/token",
+      process.env.AUTH0_TOKEN,
       qs.stringify({
-        client_id: "FPQZJsdfhAJl4kGvhsVdYUB2TMFl4Hp8",
-        client_secret: process.env.AUTH0_CLIENT_SECRET, // Usa tu client_secret aquí
+        client_id: process.env.AUTH0_CLIENT_ID,
+        client_secret: process.env.AUTH0_CLIENT_SECRET,
         code,
-        redirect_uri: "https://literate-fun-insect.ngrok-free.app/callback",
+        redirect_uri: process.env.AUTH0_CALLBACK_URL,
         grant_type: "authorization_code",
       })
     );
 
     const { access_token, id_token } = tokenResponse.data;
     console.log("Tokens obtenidos:", access_token, id_token);
-    res.json({ access_token, id_token }); // Aquí puedes almacenar el token en sesión o en una cookie
+    res.json({ access_token, id_token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error retrieving tokens" });
@@ -159,7 +169,7 @@ app.get("/logout", (req, res) => {
     `https://dev-mr1efu4j3fgy6iej.us.auth0.com/v2/logout?` +
     `client_id=FPQZJsdfhAJl4kGvhsVdYUB2TMFl4Hp8&` +
     `returnTo=https://literate-fun-insect.ngrok-free.app/`;
-  res.redirect(logoutUrl); // Redirigir al usuario para cerrar sesión
+  res.redirect(logoutUrl);
 });
 
 // Manejador de errores de autenticación

@@ -12,7 +12,7 @@ export const LogoutButton = () => {
   };
 
   return (
-    <button className="btn" onClick={handleLogout}>
+    <button className="btn btn-outline btn-error text-xs px-2 py-1" onClick={handleLogout}>
       Log Out
     </button>
   );

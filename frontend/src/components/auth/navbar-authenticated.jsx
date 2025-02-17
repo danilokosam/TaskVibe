@@ -1,7 +1,9 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useEffect, useRef } from "react";
+import { Logo } from "@/components/Logo";
 
-export const NavbarAuthenticated = () => { // Asegúrate de que el nombre del componente sea correcto
+export const NavbarAuthenticated = () => {
+  // Asegúrate de que el nombre del componente sea correcto
   const { user, logout } = useAuth0();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -34,7 +36,7 @@ export const NavbarAuthenticated = () => { // Asegúrate de que el nombre del co
   return (
     <div className="navbar bg-base-100">
       <div className="flex-1">
-        <a className="btn btn-ghost text-xl">TaskVibe</a>
+        <Logo />
       </div>
       <div className="flex-none gap-2">
         <div className="form-control">

@@ -8,13 +8,15 @@ export const Auth0ProviderWithNavigate = ({ children }) => {
   const domain = import.meta.env.VITE_DOMAIN_FRONTEND;
   const clientId = import.meta.env.VITE_CLIENT_ID;
   const redirectUri = import.meta.env.VITE_CALLBACK_URL;
+  const audience = import.meta.env.VITE_AUDIENCE;
 
   const OnRedirectCallback = (appState) => {
     navigate(appState?.returnTo || window.location.pathname);
     //window.location.pathname
   };
 
-  if (!(domain && clientId && redirectUri)) {
+  if (!(domain && clientId && redirectUri && audience)) {
+    console.error("Faltan variables de entorno para configurar Auth0.");
     return null;
   }
 
@@ -22,7 +24,7 @@ export const Auth0ProviderWithNavigate = ({ children }) => {
     <Auth0Provider
       domain={domain}
       clientId={clientId}
-      authorizationParams={{ redirect_uri: redirectUri }}
+      authorizationParams={{ redirect_uri: redirectUri, audience: audience }}
       onRedirectCallback={OnRedirectCallback}
     >
       {children}
