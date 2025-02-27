@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    groups: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Group",
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,

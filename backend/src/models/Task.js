@@ -37,7 +37,7 @@ const taskSchema = new mongoose.Schema(
     ],
   },
   {
-    timestamps: true, // Add fields such as created_at and updated_at
+    timestamps: true, // Agregar campos de fecha de creación y actualización
   }
 );
 

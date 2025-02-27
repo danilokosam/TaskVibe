@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import routes from "./routes/tasks.js";
+import userRoutes from "./routes/userRoutes.js";
+import groupRoutes from "./routes/groupRoutes.js";
 import notFound from "./middlewares/notFound.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import dotenv from "dotenv";
@@ -8,64 +10,14 @@ import helmet from "helmet";
 import axios from "axios";
 import qs from "querystring";
 import { userMiddleware } from "./middlewares/userMiddleware.js";
-import jwksRsa from "jwks-rsa";
-import jwt from "jsonwebtoken";
+import checkJwt from "./middlewares/checkJwt.js";
 import rateLimit from "express-rate-limit";
+import checkRole from "./middlewares/checkRole.js";
+import { startCronJobs } from "./utils/cronJobs.js";
 
 dotenv.config();
 
 const app = express();
-
-// Configuración de jwks-rsa para obtener la clave pública de Auth0
-const client = jwksRsa({
-  jwksUri: `https://dev-mr1efu4j3fgy6iej.us.auth0.com/.well-known/jwks.json`,
-});
-
-// Función para obtener la clave pública de Auth0
-function getKey(header, callback) {
-  client.getSigningKey(header.kid, (err, key) => {
-    if (err) {
-      console.log("Error al obtener la clave pública de Auth0:", err);
-      return callback(err);
-    }
-    const signingKey = key.publicKey || key.rsaPublicKey;
-    console.log("Clave pública obtenida:", signingKey);
-    callback(null, signingKey);
-  });
-}
-
-// Middleware personalizado para validar JWT con RS256
-const checkJwt = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; // Obtener el token del encabezado Authorization
-
-  if (!token) {
-    console.log("Authorization Header🔧🔧:", req.headers.authorization);
-    return res.status(401).json({ error: "Token no proporcionado" });
-  }
-
-  // console.log("Authorization Header🔑🔑:", req.headers.authorization);
-
-  // Verificar el JWT usando jsonwebtoken y la clave pública de Auth0
-  jwt.verify(
-    token,
-    getKey,
-    {
-      audience: process.env.AUDIENCE,
-      issuer: process.env.ISSUER,
-    },
-    (err, decoded) => {
-      if (err) {
-        console.log("Token inválido:", err.message);
-        return res
-          .status(401)
-          .json({ error: "Token inválido", details: err.message });
-      }
-      console.log("Token válido, decoded user:", decoded);
-      req.user = decoded; // Guardar la información del usuario en la solicitud
-      next();
-    }
-  );
-};
 
 // Configuración de middlewares básicos
 app.use(helmet());
@@ -93,9 +45,15 @@ app.use((req, res, next) => {
 app.use("/tasks", checkJwt, userMiddleware, routes);
 
 // Ruta de perfil para ver la información del usuario
-app.get("/profile", checkJwt, (req, res) => {
+app.get("/profile", checkJwt, checkRole("admin"), (req, res) => {
   res.send(req.user); // Mostrar la información del usuario desde el payload del JWT
 });
+
+// Rutas de usuario para asignar admin
+app.use("/users", checkJwt, checkRole("admin"), userRoutes);
+
+// Rutas de grupo
+app.use("/groups", checkJwt, groupRoutes);
 
 // Ruta principal
 app.get("/", (req, res) => {
@@ -182,6 +140,9 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
+
+// Función para limpiar las invitaciones
+startCronJobs();
 
 // Middleware de errores generales
 app.use(notFound);
