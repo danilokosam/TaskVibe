@@ -4,8 +4,8 @@ import {
   addMemberToGroup,
   createGroupInvitation,
   joinGroupByInvitation,
-} from "../controllers/groupController";
-import checkJwt from "../middlewares/checkJwt";
+} from "../controllers/groupController.js";
+import checkJwt from "../middlewares/checkJwt.js";
 
 const router = express.Router();
 

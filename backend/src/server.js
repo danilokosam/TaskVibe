@@ -114,7 +114,14 @@ app.get("/callback", async (req, res) => {
 
     const { access_token, id_token } = tokenResponse.data;
     console.log("Tokens obtenidos:", access_token, id_token);
-    res.json({ access_token, id_token });
+
+    // Establecer cookies con los tokens
+    res.cookie("id_token", id_token, { httpOnly: false, secure: true });
+    res.cookie("access_token", access_token, { httpOnly: true, secure: true });
+
+    res.redirect("/tasks");
+
+    // res.json({ access_token, id_token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error retrieving tokens" });

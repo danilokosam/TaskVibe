@@ -33,8 +33,8 @@ const checkJwt = (req, res, next) => {
     token,
     getKey,
     {
-      audience: process.env.AUDIENCE,
-      issuer: process.env.ISSUER,
+      audience: process.env.AUDIENCE, // Emisor del token, es decir el servidor de auth0 que lo generó. Se usa para validar que el token viene de una fuente confiable
+      issuer: process.env.ISSUER, // Es la audiencia del token, el serivicio ( nuestra API ) para el que el token fue creado. Esto asegura que el token sea usado solo por la API correcta
     },
     (err, decoded) => {
       if (err) {

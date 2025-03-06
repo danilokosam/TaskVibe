@@ -1,6 +1,7 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useEffect, useRef } from "react";
 import { Logo } from "@/components/Logo";
+import { UserRoles } from "../UserRoles";
 
 export const NavbarAuthenticated = () => {
   // Asegúrate de que el nombre del componente sea correcto
@@ -61,13 +62,10 @@ export const NavbarAuthenticated = () => {
             <ul
               ref={menuRef}
               tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+              className="menu menu-sm dropdown-content bg-base-200 rounded-box z-[1] mt-3 w-52 p-2 shadow"
             >
               <li>
-                <a className="justify-between">
-                  Profile
-                  <span className="badge">New</span>
-                </a>
+                <a className="justify-between">Profile</a>
               </li>
               <li>
                 <a>Settings</a>
@@ -78,6 +76,7 @@ export const NavbarAuthenticated = () => {
             </ul>
           )}
         </div>
+        <UserRoles />
       </div>
     </div>
   );

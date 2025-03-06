@@ -1,4 +1,4 @@
-import User from "../models/User";
+import User from "../models/User.js";
 
 // Asignar rol de admin a un usuario
 export const assignAdminRole = async (req, res) => {
